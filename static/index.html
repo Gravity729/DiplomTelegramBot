@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Molkova_Shop</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            color: #333;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        h1 {
+            background: linear-gradient(to right, #8a2be2, #e66465);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            width: 100%;
+            margin: 0;
+            font-size: 24px;
+        }
+
+        /* Контейнер поиска и сортировки */
+        .search-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            max-width: 600px;
+            margin-top: 20px;
+            padding: 0 10px;
+            box-sizing: border-box;
+        }
+
+        .search-container input[type="text"] {
+            padding: 0 8px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid #ddd;
+            border-radius: 4px 0 0 4px;
+            height: 40px; /* Фиксированная высота */
+            box-sizing: border-box;
+        }
+
+        .search-container button {
+            width: 40px;
+            height: 40px; /* Совпадает по высоте с полем ввода */
+            background-color: #333;
+            color: white;
+            border: 1px solid #333;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 18px; /* Размер иконки поиска */
+        }
+
+        /* Кнопка сортировки */
+        .sort-container {
+            display: flex;
+            justify-content: flex-end;
+            width: 100%;
+            max-width: 600px;
+            padding-right: 10px;
+            margin-top: 10px;
+            box-sizing: border-box;
+        }
+
+        .sort-button {
+            display: flex;
+            align-items: center;
+            padding: 5px 10px;
+            background-color: #f7f7f7;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #333;
+        }
+
+        .sort-button:hover {
+            background-color: #ebebeb;
+        }
+
+        .sort-button span {
+            margin-left: 5px;
+        }
+
+        /* Выпадающий список сортировки */
+        .sort-dropdown {
+            display: none;
+            position: absolute;
+            top: 100px;
+            right: 10px;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 150px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        .sort-dropdown.active {
+            display: block;
+        }
+
+        .sort-dropdown option {
+            padding: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .sort-dropdown option:last-child {
+            border-bottom: none;
+        }
+
+        .sort-dropdown option:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* Контейнер курсов */
+        .courses-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            width: 100%;
+            max-width: 600px;
+            padding: 0 10px;
+            box-sizing: border-box;
+            margin-top: 10px;
+        }
+
+        .course {
+            border: 1px solid #ddd;
+            padding: 15px;
+            background-color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            box-sizing: border-box;
+            min-height: 320px;
+        }
+
+        .course img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            margin-bottom: 10px;
+        }
+
+        .course h2 {
+            font-size: 16px;
+            margin: 10px 0;
+            line-height: 1.2;
+            overflow: hidden;
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        .course .price {
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 10px;
+            white-space: nowrap; /* Не позволяет разрывать цену и символ "₽" */
+        }
+
+        .course button {
+            padding: 10px;
+            background-color: #8a2be2;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            width: 100px;
+            font-size: 14px;
+            margin-top: auto;
+        }
+
+        /* Стиль сообщения "Курс не найден" */
+        .no-results {
+            text-align: center;
+            font-size: 16px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <h1>Molkova_Shop</h1>
+
+    <!-- Центрированная строка поиска с иконкой поиска -->
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Поиск по названию">
+        <button onclick="searchCourses()">🔍</button>
+    </div>
+
+    <!-- Кнопка сортировки справа под строкой поиска -->
+    <div class="sort-container">
+        <div class="sort-button" onclick="toggleSortDropdown()">
+            ⇅ <span>Сортировка</span>
+        </div>
+        <div class="sort-dropdown" id="sortDropdown">
+            <option onclick="sortCourses('default')">По умолчанию</option>
+            <option onclick="sortCourses('asc')">По возрастанию цены</option>
+            <option onclick="sortCourses('desc')">По убыванию цены</option>
+        </div>
+    </div>
+
+    <!-- Сетка курсов -->
+    <div class="courses-container" id="courses"></div>
+
+    <script>
+        let courses = []; // Сохраним все курсы для фильтрации и сортировки
+        let displayedCourses = []; // Курсы, отображаемые после поиска
+
+        async function loadCourses() {
+            try {
+                const response = await fetch('/get_courses');
+                courses = await response.json();
+                displayedCourses = [...courses]; // Сначала отображаем все курсы
+                displayCourses(displayedCourses);
+            } catch (error) {
+                console.error('Ошибка загрузки курсов:', error);
+            }
+        }
+
+        function displayCourses(coursesToDisplay) {
+            const coursesContainer = document.getElementById('courses');
+            coursesContainer.innerHTML = '';
+
+            if (coursesToDisplay.length === 0) {
+                coursesContainer.innerHTML = '<p class="no-results">Курс не найден</p>';
+                return;
+            }
+
+            coursesToDisplay.forEach(course => {
+                const courseElement = document.createElement('div');
+                courseElement.classList.add('course');
+                courseElement.innerHTML = `
+                    <img src="/images/${course.image}" alt="${course.name}">
+                    <h2>${course.name}</h2>
+                    <p class="price">Стоимость: ${course.price} ₽</p>
+                    <button onclick="showAlert('${course.name}')">Оплатить</button>
+                `;
+                coursesContainer.appendChild(courseElement);
+            });
+        }
+
+        function showAlert(courseName) {
+            alert(`Вы выбрали курс: ${courseName}`);
+        }
+
+        function searchCourses() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            displayedCourses = courses.filter(course => course.name.toLowerCase().includes(query));
+            displayCourses(displayedCourses);
+        }
+
+        function toggleSortDropdown() {
+            document.getElementById('sortDropdown').classList.toggle('active');
+        }
+
+        function sortCourses(order) {
+            let sortedCourses = [...displayedCourses]; // Сортируем только отображаемые курсы
+            if (order === 'asc') {
+                sortedCourses.sort((a, b) => a.price - b.price);
+            } else if (order === 'desc') {
+                sortedCourses.sort((a, b) => b.price - a.price);
+            }
+
+            displayCourses(sortedCourses);
+            document.getElementById('sortDropdown').classList.remove('active'); // Закрываем меню
+        }
+
+        document.getElementById('searchInput').addEventListener('input', searchCourses);
+
+        loadCourses();
+    </script>
+</body>
+</html>
